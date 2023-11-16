@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<meta charset="UTF-8">
+<title>MQTT Monitoring Service</title>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<style>
+		body{
+			background-image: linear-gradient(
+				rgba(255, 255, 255, 0.6),
+				rgba(255, 255, 255, 0.6)
+			),url("다산동 백그라운드 이미지.jpg");
+			background-repeat: no-repeat ;
+			background-size : 2000px 1000px;
+			
+		}
+		body{
+			text-align: center;
+			
+		}
+		li{
+			list-style-type: none;
+		}
+		a{
+			
+			display: none;
+		}
+		p{
+			display:none;
+		}
+		
+		
+	</style>
+
+<script>
+	var socket = io.connect();
+	var timer = null;
+	$(document).ready(function(){
+		socket.on("socket_up_temp", function(data){
+			data = JSON.parse(data);
+			$(".mqttlist_temp").html('<li> 온도는 : '+data.tmp+'도.'+'</li>');
+			if(data.tmp <= 15){
+				$('#box').html("추워요 감기조심하세요!");
+				$('a:first-of-type').css('display','none');
+				$('a:nth-of-type(2)').css('display', 'block');
+				$('a:last-of-type').css('display','none');
+				$('p').css('display','block');
+			}
+			else if(data.tmp >15 && data.tmp <=25){
+				$('#box').html('날씨가 좋아요 강아지와 산책 어떠신가요?');
+				$('a:first-of-type').css('display','block');
+				$('a:nth-of-type(2)').css('display', 'none');
+				$('a:last-of-type').css('display','none');
+				$('p').css('display','block');
+			}
+			else{
+				$('#box').html('날씨가 덥네요, 집콕 추천합니다!')
+				$('a:first-of-type').css('display','none');
+				$('a:nth-of-type(2)').css('display', 'none');
+				$('a:last-of-type').css('display','block');
+				$('p').css('display','block');
+			}
+			
+		});
+		socket.on("socket_up_humi", function(data){
+			data = JSON.parse(data);
+			$(".mqttlist_humi").html('<li> 습도는 : '+data.humi+'%.'+'</li>');
+		});
+		socket.on("socket_up_wind", function(data){
+			data = JSON.parse(data);
+			$(".mqttlist_wind").html('<li> 풍속은 : '+data.wind+'m/s'+'</li>');
+		});
+		if(timer==null){
+			timer = window.setInterval("timer_1()", 3000);
+		}
+		
+	});
+	function timer_1(){
+		socket.emit("socket_evt_update", JSON.stringify({}));
+	}
+	
+</script>
+</head>
+<body>
+<h3><strong>경기도 다산동 날씨 정보입니다</strong></h3>
+	<div id="msg">
+		<div id="mqtt_logs">
+			<ul class="mqttlist_temp"></ul>
+			<ul class="mqttlist_humi"></ul>
+			<ul class="mqttlist_wind"></ul><br>
+			<div id = box></div>
+			<a href = "https://www.weather.go.kr/w/index.do#"><img src="따뜻해요.png" width="300" height="300"></a>
+			<a href = "https://www.weather.go.kr/w/index.do#"><img src="추워요.png" width="300" height="300"></a>
+			<a href = "https://www.weather.go.kr/w/index.do#"><img src= "더워죽는사진.png" width="300" height="300"></a>
+			<p>위 그림을 클릭하면 다산1동 날씨 홈페이지로 이동합니다!</p>
+		</div>
+	</div>
+</body>
+</html>
+
